@@ -1,5 +1,3 @@
-// game.js
-
 // --- Three.js Scene Setup ---
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb); // light sky blue
@@ -41,7 +39,6 @@ directionalLight.shadow.camera.top = 10;
 directionalLight.shadow.camera.bottom = -10;
 scene.add(directionalLight);
 
-
 // Ground plane
 const groundGeometry = new THREE.PlaneGeometry(200, 200);
 const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x303030, roughness: 0.9 });
@@ -52,13 +49,11 @@ ground.position.y = 0;
 ground.receiveShadow = true;
 scene.add(ground);
 
-// --- Multiplayer Setup ---
 const socket = io();
 const clock = new THREE.Clock();
 const players = {};
 let localPlayer = null;
 
-// --- Roblox-Style Rig Function ---
 function createRobloxRig(name = "Player") {
   const rig = new THREE.Group();
   rig.name = name;
@@ -141,6 +136,15 @@ class Player {
     window.addEventListener("keyup", (e) => {
       this.keys[e.key.toLowerCase()] = false;
     });
+
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && chatInput.value.trim() !== '') {
+        const message = chatInput.value;
+        socket.emit('chat', message);  // Emit to the server
+        chatInput.value = '';  // Clear input
+      }
+    });
+
   }
 
   update(delta) {
@@ -230,8 +234,6 @@ class Player {
     });
   }
 }
-
-// --- Socket.IO Network Events ---
 socket.on("connect", () => {
   console.log("Connected as", socket.id);
   localPlayer = new Player(socket.id, true);
@@ -259,6 +261,39 @@ socket.on("playerLeft", (id) => {
     console.log(`Player ${id} left`);
   }
 });
+
+socket.on("currentPlayers", (playersData) => {
+  for (const id in playersData) {
+    if (id !== socket.id) {
+      players[id] = new Player(id, false);
+      players[id].applyState(playersData[id]);
+    }
+  }
+});
+
+// --- Chat Handling ---
+const chatDisplay = document.getElementById('chat-display');
+const chatInput = document.getElementById('chat-input');
+
+// Send chat message when the user presses Enter
+chatInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && chatInput.value.trim() !== '') {
+    const message = chatInput.value;
+    socket.emit('chat', message);
+    chatInput.value = ''; // Clear input after sending
+  }
+});
+
+// Receive chat message from server and display it
+socket.on('chat', (data) => {
+  const { id, message } = data;
+  const player = players[id] || { name: `Player ${id}` };
+  const chatMessage = document.createElement('div');
+  chatMessage.textContent = `${player.name}: ${message}`;
+  chatDisplay.appendChild(chatMessage);
+  chatDisplay.scrollTop = chatDisplay.scrollHeight; // Scroll to bottom
+});
+
 
 // --- Handle window resizing ---
 window.addEventListener("resize", () => {

@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BradBlock</title>
+  <link rel="icon" href="favicon.ico">
   <style>
     body, html {
       margin: 0;
@@ -20,12 +21,42 @@
     canvas {
       display: block;
     }
+    #chat-display {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      color: white;
+      font-size: 14px;
+      max-height: 200px;
+      overflow-y: scroll;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+    }
+    #chat-input {
+      position: absolute;
+      bottom: 20px;
+      left: 250px;
+      width: 300px;
+      padding: 5px;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: none;
+    }
   </style>
 </head>
 <body>
   <div id="game-container" style="width: 100vw; height: 100vh;"></div>
+  <input type="text" id="chat-input" placeholder="Type a message..." />
+  <div id="chat-display"></div>
+
+  <!-- Three.js (minified) -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="game.js"></script>
+
+  <!-- Socket.IO (client library) -->
+  <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+
+  <!-- Your custom game.js script -->
+  <script src="/game.js"></script>
+
 </body>
 </html>
